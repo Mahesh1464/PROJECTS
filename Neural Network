@@ -1,0 +1,109 @@
+import tensorflow as tf
+from tensorflow import keras
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_iris
+from google.colab import drive
+
+drive.mount('/content/drive')
+
+print('connected!...')
+
+file_path = '/content/drive/MyDrive/patient_priority.csv'
+data = pd.read_csv(file_path)
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the data (optional but recommended for neural networks)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Build a neural network model for regression
+model = keras.Sequential([
+    keras.layers.Input(shape=(X_train.shape[1],)),  # Input layer with the number of features
+    keras.layers.Dense(64, activation='relu'),     # Hidden layer with 64 neurons and ReLU activation
+    keras.layers.Dense(1)                         # Output layer (1 output for regression)
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Train the model
+model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=1)
+
+# Evaluate the model using R-squared (R²)
+y_pred = model.predict(X_test)
+r2 = r2_score(y_test, y_pred)
+print(f"R-squared Score on Test Data: {r2}")
+print(f"R-square (Model Accuracy): ",r2*100)
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import StandardScaler
+import tensorflow as tf
+from tensorflow import keras
+
+# Lists to store the training accuracy and validation accuracy for each epoch
+train_accuracy_lr = []
+val_accuracy_lr = []
+
+# Load the Iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the data (optional but recommended for neural networks)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Train the model for each epoch and track the accuracy
+max_epochs = 30  # Define the maximum number of epochs
+for epoch in range(1, max_epochs + 1):
+    # Initialize the Neural Network model
+    model = keras.Sequential([
+        keras.layers.Input(shape=(X_train.shape[1],)),
+        keras.layers.Dense(64, activation='relu'),
+        keras.layers.Dense(3, activation='softmax')  # Output layer for multi-class classification
+    ])
+
+    # Compile the model
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+    # Train the model
+    model.fit(X_train, y_train, epochs=2, batch_size=40, verbose=0)  # Use verbose=0 to suppress output
+
+    # Evaluate the model
+    train_accuracy = model.evaluate(X_train, y_train, verbose=0)[1]
+    val_accuracy = model.evaluate(X_test, y_test, verbose=0)[1]
+
+    train_accuracy_lr.append(train_accuracy)
+    val_accuracy_lr.append(val_accuracy)
+
+    # Print the accuracy for the current epoch
+    print(f'Epoch {epoch} - Accuracy: {train_accuracy:.4f}, Validation Accuracy: {val_accuracy:.4f}')
+
+# Plot the accuracy for training and validation over the epochs
+epochs_list = range(1, max_epochs + 1)
+plt.figure(figsize=(10, 6))
+plt.plot(epochs_list, train_accuracy_lr, label='Accuracy', marker='o')
+plt.plot(epochs_list, val_accuracy_lr, label='Validation Accuracy', marker='o')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Accuracy vs. Epochs for Neural Network (Iris Classification)')
+plt.legend()
+plt.grid(True)
+plt.show()
